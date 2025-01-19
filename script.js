@@ -1,22 +1,20 @@
-// Define Canvas and Context
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// Game Variables
 const tankImg = new Image();
-tankImg.src = "580b.png"; // Path to your tank image
+tankImg.src = "580b.png"; 
 const alienImg = new Image();
-alienImg.src = "5f5662eb5ce3ee00048bd136.png"; // Alien image path
+alienImg.src = "5f5662eb5ce3ee00048bd136.png";
 const heartImg = new Image();
-heartImg.src = "heart.png"; // Path to heart image
+heartImg.src = "heart.png"; 
 const giftImg = new Image();
-giftImg.src = "gift.png"; // Path to gift image
+giftImg.src = "gift.png"; 
 
-let spaceship = { x: canvas.width / 2 - 50, y: canvas.height - 70, width: 120, height: 70 }; // Tank properties
-let gun = { x: spaceship.x + spaceship.width / 2 - 5, y: spaceship.y - 10, width: 10, height: 30 }; // Gun properties
+let spaceship = { x: canvas.width / 2 - 50, y: canvas.height - 70, width: 120, height: 70 }; 
+let gun = { x: spaceship.x + spaceship.width / 2 - 5, y: spaceship.y - 10, width: 10, height: 30 }; 
 let bullets = [];
 let enemies = [];
 let gifts = [];
@@ -26,10 +24,8 @@ let lives = 3;
 let gameOver = false;
 let tankDestroyed = false;
 
-// Key States
 const keys = { left: false, right: false, enter: false };
 
-// Event Listeners
 window.addEventListener("keydown", (e) => {
   if (e.key === "ArrowLeft") keys.left = true;
   if (e.key === "ArrowRight") keys.right = true;
@@ -41,16 +37,13 @@ window.addEventListener("keyup", (e) => {
   if (e.key === "Enter") keys.enter = false;
 });
 
-// Spaceship Movement (tank left and right)
 function moveSpaceship() {
   if (keys.left && spaceship.x > 0) spaceship.x -= 5;
   if (keys.right && spaceship.x < canvas.width - spaceship.width) spaceship.x += 5;
 
-  // Update the gun position based on the spaceship's x position
   gun.x = spaceship.x + spaceship.width / 2 - gun.width / 2;
 }
 
-// Fire Bullet Logic (when Enter is pressed)
 let canFire = true;
 function fireBullet() {
   if (keys.enter && canFire) {
@@ -62,19 +55,16 @@ window.addEventListener("keyup", (e) => {
   if (e.key === "Enter") canFire = true;
 });
 
-// Update Bullets
 function updateBullets() {
   bullets = bullets.filter((bullet) => bullet.y > 0);
   bullets.forEach((bullet) => {
     bullet.y -= 7;
 
-    // Draw bullets
     ctx.fillStyle = "gold";
     ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
   });
 }
 
-// Create Enemies
 function createEnemy() {
   if (Math.random() < 0.02) {
     enemies.push({
@@ -86,7 +76,6 @@ function createEnemy() {
   }
 }
 
-// Create Gifts
 function createGift() {
   if (Math.random() < 0.005) {
     gifts.push({
@@ -98,7 +87,6 @@ function createGift() {
   }
 }
 
-// Collision Detection
 function checkCollision(rect1, rect2) {
   return (
     rect1.x < rect2.x + rect2.width &&
@@ -108,13 +96,11 @@ function checkCollision(rect1, rect2) {
   );
 }
 
-// Update Game State
 function updateGame() {
   if (gameOver) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw the tank
   if (!tankDestroyed) {
     ctx.drawImage(tankImg, spaceship.x, spaceship.y, spaceship.width, spaceship.height);
   } else {
@@ -139,30 +125,24 @@ function updateGame() {
     return;
   }
 
-  // Draw the gun
   ctx.fillStyle = "black";
   ctx.fillRect(gun.x, gun.y, gun.width, gun.height);
 
-  // Move spaceship (tank)
   moveSpaceship();
 
-  // Fire bullets
   fireBullet();
   updateBullets();
 
-  // Create and move enemies
   createEnemy();
   enemies = enemies.filter((enemy) => enemy.y < canvas.height);
   enemies.forEach((enemy) => {
     enemy.y += 2 + level * 0.5;
     ctx.drawImage(alienImg, enemy.x, enemy.y, enemy.width, enemy.height);
 
-    // Check collision with spaceship (tank)
     if (checkCollision(spaceship, enemy)) {
       tankDestroyed = true;
     }
 
-    // Check collision with bullets
     bullets.forEach((bullet, bulletIndex) => {
       if (checkCollision(bullet, enemy)) {
         bullets.splice(bulletIndex, 1);
@@ -173,14 +153,12 @@ function updateGame() {
     });
   });
 
-  // Create and move gifts
   createGift();
   gifts = gifts.filter((gift) => gift.y < canvas.height);
   gifts.forEach((gift) => {
     gift.y += 3;
     ctx.drawImage(giftImg, gift.x, gift.y, gift.width, gift.height);
 
-    // Check collision with spaceship (tank)
     if (checkCollision(spaceship, gift)) {
       if (lives < 5) {
         lives++;
@@ -189,13 +167,11 @@ function updateGame() {
     }
   });
 
-  // Display Score, Level, and Lives
   ctx.fillStyle = "black";
   ctx.font = "20px Arial";
   ctx.fillText(`Score: ${score}`, 20, 30);
   ctx.fillText(`Level: ${level}`, 20, 60);
 
-  // Draw lives with hearts
   for (let i = 0; i < lives; i++) {
     ctx.drawImage(heartImg, 20 + i * 30, 70, 25, 25);
   }
@@ -203,13 +179,11 @@ function updateGame() {
   requestAnimationFrame(updateGame);
 }
 
-// End Game
 function endGame() {
   gameOver = true;
   document.getElementById("gameOver").classList.remove("hidden");
 }
 
-// Restart Game
 function restartGame() {
   score = 0;
   level = 1;
@@ -222,5 +196,4 @@ function restartGame() {
   updateGame();
 }
 
-// Start Game
 updateGame();
