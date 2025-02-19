@@ -5,24 +5,30 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const tankImg = new Image();
-tankImg.src = "580b.png"; 
+tankImg.src = "580b.png";
 const alienImg = new Image();
 alienImg.src = "5f5662eb5ce3ee00048bd136.png";
 const heartImg = new Image();
-heartImg.src = "heart.png"; 
+heartImg.src = "heart.png";
 const giftImg = new Image();
-giftImg.src = "gift.png"; 
+giftImg.src = "gift.png";
 
-let spaceship = { x: canvas.width / 2 - 50, y: canvas.height - 70, width: 120, height: 70 }; 
-let gun = { x: spaceship.x + spaceship.width / 2 - 5, y: spaceship.y - 10, width: 10, height: 30 }; 
-let bullets = [];
-let enemies = [];
-let gifts = [];
-let score = 0;
-let level = 1;
-let lives = 3;
-let gameOver = false;
-let tankDestroyed = false;
+let spaceship, gun, bullets, enemies, gifts, lives, gameOver, score, level;
+
+function resetGame() {
+  spaceship = { x: canvas.width / 2 - 50, y: canvas.height - 70, width: 120, height: 70 };
+  gun = { x: spaceship.x + spaceship.width / 2 - 5, y: spaceship.y - 10, width: 10, height: 30 };
+  bullets = [];
+  enemies = [];
+  gifts = [];
+  lives = 3;
+  gameOver = false;
+  score = 0;
+  level = 1;
+
+  document.getElementById("restartButton").style.display = "none";
+  updateGame();
+}
 
 const keys = { left: false, right: false, enter: false };
 
@@ -40,7 +46,6 @@ window.addEventListener("keyup", (e) => {
 function moveSpaceship() {
   if (keys.left && spaceship.x > 0) spaceship.x -= 5;
   if (keys.right && spaceship.x < canvas.width - spaceship.width) spaceship.x += 5;
-
   gun.x = spaceship.x + spaceship.width / 2 - gun.width / 2;
 }
 
@@ -59,7 +64,6 @@ function updateBullets() {
   bullets = bullets.filter((bullet) => bullet.y > 0);
   bullets.forEach((bullet) => {
     bullet.y -= 7;
-
     ctx.fillStyle = "gold";
     ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
   });
@@ -101,52 +105,32 @@ function updateGame() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if (!tankDestroyed) {
-    ctx.drawImage(tankImg, spaceship.x, spaceship.y, spaceship.width, spaceship.height);
-  } else {
-    ctx.fillStyle = "red";
-    ctx.font = "30px Arial";
-    ctx.fillText("Tank Destroyed!", canvas.width / 2 - 100, canvas.height / 2 - 30);
-
-    const restartButton = document.createElement("button");
-    restartButton.textContent = "Restart Game";
-    restartButton.style.position = "absolute";
-    restartButton.style.top = `${canvas.height / 2}px`;
-    restartButton.style.left = `${canvas.width / 2 - 50}px`;
-    restartButton.style.padding = "10px 20px";
-    restartButton.style.fontSize = "16px";
-    document.body.appendChild(restartButton);
-
-    restartButton.addEventListener("click", () => {
-      document.body.removeChild(restartButton);
-      restartGame();
-    });
-
-    return;
-  }
-
+  ctx.drawImage(tankImg, spaceship.x, spaceship.y, spaceship.width, spaceship.height);
   ctx.fillStyle = "black";
   ctx.fillRect(gun.x, gun.y, gun.width, gun.height);
 
   moveSpaceship();
-
   fireBullet();
   updateBullets();
 
   createEnemy();
   enemies = enemies.filter((enemy) => enemy.y < canvas.height);
-  enemies.forEach((enemy) => {
+  enemies.forEach((enemy, index) => {
     enemy.y += 2 + level * 0.5;
     ctx.drawImage(alienImg, enemy.x, enemy.y, enemy.width, enemy.height);
 
     if (checkCollision(spaceship, enemy)) {
-      tankDestroyed = true;
+      lives--;
+      enemies.splice(index, 1);
+      if (lives === 0) {
+        endGame();
+      }
     }
 
     bullets.forEach((bullet, bulletIndex) => {
       if (checkCollision(bullet, enemy)) {
         bullets.splice(bulletIndex, 1);
-        enemies.splice(enemies.indexOf(enemy), 1);
+        enemies.splice(index, 1);
         score += 10;
         if (score % 50 === 0) level++;
       }
@@ -155,7 +139,7 @@ function updateGame() {
 
   createGift();
   gifts = gifts.filter((gift) => gift.y < canvas.height);
-  gifts.forEach((gift) => {
+  gifts.forEach((gift, index) => {
     gift.y += 3;
     ctx.drawImage(giftImg, gift.x, gift.y, gift.width, gift.height);
 
@@ -163,14 +147,13 @@ function updateGame() {
       if (lives < 5) {
         lives++;
       }
-      gifts.splice(gifts.indexOf(gift), 1);
+      gifts.splice(index, 1);
     }
   });
 
-  ctx.fillStyle = "black";
+  ctx.fillStyle = "white";
   ctx.font = "20px Arial";
-  ctx.fillText(`Score: ${score}`, 20, 30);
-  ctx.fillText(`Level: ${level}`, 20, 60);
+  
 
   for (let i = 0; i < lives; i++) {
     ctx.drawImage(heartImg, 20 + i * 30, 70, 25, 25);
@@ -181,19 +164,29 @@ function updateGame() {
 
 function endGame() {
   gameOver = true;
-  document.getElementById("gameOver").classList.remove("hidden");
+  ctx.fillStyle = "red";
+  ctx.font = "30px Arial";
+  ctx.fillText("Game Over!", canvas.width / 2 - 80, canvas.height / 2 - 30);
+  document.getElementById("restartButton").style.display = "block";
 }
 
-function restartGame() {
-  score = 0;
-  level = 1;
-  lives = 3;
-  gameOver = false;
-  tankDestroyed = false;
-  enemies = [];
-  bullets = [];
-  gifts = [];
-  updateGame();
-}
+// ** HTML मध्ये Restart बटण जोडा **
+const restartButton = document.createElement("button");
+restartButton.id = "restartButton";
+restartButton.innerText = "Restart Game";
+restartButton.style.position = "absolute";
+restartButton.style.top = "50%";
+restartButton.style.left = "50%";
+restartButton.style.transform = "translate(-50%, -50%)";
+restartButton.style.padding = "10px 20px";
+restartButton.style.fontSize = "20px";
+restartButton.style.background = "red";
+restartButton.style.color = "white";
+restartButton.style.border = "none";
+restartButton.style.cursor = "pointer";
+restartButton.style.display = "none";
+document.body.appendChild(restartButton);
 
-updateGame();
+restartButton.addEventListener("click", resetGame);
+
+resetGame();
