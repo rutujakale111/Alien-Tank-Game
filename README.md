@@ -2,8 +2,9 @@
 
 Alien Tank Game is a fun and engaging 2D game developed using HTML, CSS, and JavaScript. Players control a tank, avoiding enemies and collecting power-ups while trying to achieve a high score. The game dynamically increases in difficulty as the player progresses.
 
+
 <p align="center">
-  <img src="Alien Tank Game.png" alt="Centered Image" width="300">
+  <img src="Alien Tank Game.png" alt="Centered Image" width="800">
 </p>
 
 ## Features
