@@ -69,4 +69,4 @@ Clone or download the repository.
 
 Open the project folder.
 
-**Launch index.html in your browser.**
+**Launch ````index.html```` in your browser.**
